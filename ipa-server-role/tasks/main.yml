@@ -1,0 +1,52 @@
+---
+
+- name: disable selinux
+  shell: setenforce 0 && sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
+
+- name: add a hostname entry
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ ansible_default_ipv4.address }}  {{ ansible_fqdn }}"
+    owner: root
+    group: root
+    mode: 0644  
+
+
+- name: install the ipa server necessary package
+  yum:
+    name: ipa-server
+    state: present
+    disable_gpg_check: true  
+
+- name: Run the installer
+  shell:  ipa-server-install -a {{ipaserver_admin_password}} --hostname={{ansible_fqdn}} -r {{ipaserver_realm}} -p {{ipaserver_dir_admin_password}} -n {{ipaserver_domain}} -U
+
+- name: start and enbale th sssd service
+  service:
+    name: sssd
+    state: started
+    enabled: yes
+- name: start and enbale firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes  
+- name: open the necessary services on the firewall
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  loop: "{{ firewall_services }}"
+  notify: reload the firewall    
+
+- name: restart http
+  service:
+    name: httpd
+    state: restarted
+    enabled: yes
+
+
+          
+         
+          
+    

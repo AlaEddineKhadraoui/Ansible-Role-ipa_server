@@ -1,0 +1,18 @@
+---
+- name: install a ldap server using a role
+  hosts: all
+  user: vagrant
+  become: true
+
+  
+  vars:
+    ipaserver_domain: centos.com
+    ipaserver_realm: CENTOS.COM
+    ipaserver_admin_password: azer2020
+    ipaserver_dir_admin_password: azer2020
+
+  roles:
+    - esiedge.ipa-server
+
+     
+
